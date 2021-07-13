@@ -77,6 +77,14 @@ class OktaAuthConfig():
             return factor
         return None
 
+    def preferred_mfa_type_for(self, okta_profile):
+        """ Gets factor from config """
+        if self._value.has_option(okta_profile, 'preferred_mfa_type'):
+            mfa_type = self._value.get(okta_profile, 'preferred_mfa_type')
+            self.logger.debug("Setting preferred MFA type to %s" % mfa_type)
+            return mfa_type
+        return None
+
     def duration_for(self, okta_profile):
         """ Gets requested duration from config, ignore it on failure """
         if self._value.has_option(okta_profile, 'duration'):

@@ -6,11 +6,11 @@ from oktaawscli.version import __version__
 
 class OktaAuthMfaApp():
     """ Handles per-app Okta MFA """
-    def __init__(self, logger, session, verify_ssl, auth_url):
+    def __init__(self, logger, session, verify_ssl, auth_url, preferred_mfa_type):
         self.session = session
         self.logger = logger
         self._verify_ssl_certs = verify_ssl
-        self._preferred_mfa_type = None
+        self._preferred_mfa_type = preferred_mfa_type
         self._mfa_code = None
         self._auth_url = auth_url
 
@@ -88,7 +88,9 @@ class OktaAuthMfaApp():
 
         # filter the factor list down to just the types specified in preferred_mfa_type
         if self._preferred_mfa_type is not None:
-            factors = list(filter(lambda item: item['factorType'] == self._preferred_mfa_type, factors))
+            filtered_factors = list(filter(lambda item: item['factorType'] == self._preferred_mfa_type, factors))
+            if filtered_factors:
+                factors = filtered_factors
 
         if len(factors) == 1:
             factor_name = self._build_factor_name(factors[0])

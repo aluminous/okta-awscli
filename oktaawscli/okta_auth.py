@@ -27,6 +27,7 @@ class OktaAuth():
         self.verify_ssl = verify_ssl
         self.factor = okta_auth_config.factor_for(okta_profile)
         self.app_link = okta_auth_config.app_link_for(okta_profile)
+        self.preferred_mfa_type = okta_auth_config.preferred_mfa_type_for(okta_profile)
         self.okta_auth_config = okta_auth_config
         self.session = requests.Session()
         self.session_token = ""
@@ -41,6 +42,10 @@ class OktaAuth():
         else:
             self.cookies = cookie_jar
         self.session.cookies = self.cookies
+
+        if self.has_current_session():
+            self.logger.debug("Proceeding without username and password because session is valid")
+            return
 
         if username:
             self.username = username
@@ -146,7 +151,8 @@ Please enroll an MFA factor in the Okta Web UI first!""")
             )
         )
 
-        mfa_app = OktaAuthMfaApp(self.logger, self.session, self.verify_ssl, self.auth_url)
+        mfa_app = OktaAuthMfaApp(self.logger, self.session, self.verify_ssl, self.auth_url,
+            self.preferred_mfa_type)
         api_response = mfa_app.stepup_auth(self.auth_url, state_token)
         resp = self.session.get(self.app_link)
 
