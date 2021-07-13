@@ -43,22 +43,18 @@ class OktaAuth():
             self.cookies = cookie_jar
         self.session.cookies = self.cookies
 
-        if self.has_current_session():
-            self.logger.debug("Proceeding without username and password because session is valid")
-            return
-
-        if username:
-            self.username = username
-        else:
-            self.username = okta_auth_config.username_for(okta_profile)
-
-        if password:
-            self.password = password
-        else:
-            self.password = okta_auth_config.password_for(okta_profile)
+        # Username and password may not be set, we will prompt later only if needed
+        self.username = username
+        self.password = password
 
     def primary_auth(self):
         """ Performs primary auth against Okta """
+
+        # Load auth data only if needed (with a valid session there is no need to ask the user)
+        if not self.username:
+            self.username = self.okta_auth_config.username_for(self.okta_profile)
+        if not self.password:
+            self.password = self.okta_auth_config.password_for(self.okta_profile)
 
         auth_data = {
             "username": self.username,
